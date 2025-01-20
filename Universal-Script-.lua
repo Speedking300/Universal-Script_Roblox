@@ -11,23 +11,7 @@ local espConnections = {}
 local flying = false
 local flySpeed = 10
 local gameId = game.PlaceId
-local HttpService = game:GetService("HttpService")
-local proxyUrl = "http://172.21.208.1:3000/get-script"  -- Der Proxy-Server-Link ohne Token
-
-local function getScript()
-    local response
-    local success, error = pcall(function()
-        response = HttpService:GetAsync(proxyUrl)  -- Abrufen des Scripts über den Proxy
-    end)
-
-    if success then
-        loadstring(response)()  -- Script ausführen
-    else
-        warn("Fehler beim Abrufen des Scripts: " .. error)
-    end
-end
-
-getScript()
+local HttpService = game:GetService("HttpService") 
 
 --if gameId == 1234567890 then -- Ersetze 1234567890 mit deiner Spiel-ID
 --    loadstring(game:HttpGet(''))()
