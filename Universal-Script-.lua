@@ -57,23 +57,6 @@ local function FlyLogic()
     end)
 end
 
--- Toggle for flying
-local Toggle = MainTab:CreateToggle({
-    Name = "Fly Toggle",
-    CurrentValue = false,
-    Flag = "FlyToggle1",
-    Callback = function(Value)
-        flying = Value
-        if flying then
-            FlyLogic()
-        else
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-            humanoidRootPart.Velocity = Vector3.zero -- Stop movement
-        end
-    end,
-})
 
 ------------------------------------------------------------
 
