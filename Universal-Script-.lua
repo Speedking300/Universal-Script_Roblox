@@ -8,7 +8,74 @@ local players = game:GetService("Players")
 local localPlayer = players.LocalPlayer
 local espEnabled = false
 local espConnections = {}
+local flying = false
+local flySpeed = 10
+local gameId = game.PlaceId
 
+
+
+--if gameId == 1234567890 then -- Ersetze 1234567890 mit deiner Spiel-ID
+--    loadstring(game:HttpGet(''))()
+--end
+
+---------------------For fly--------------------------------
+local function FlyLogic()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+    -- Flight loop
+    local flyLoop
+    flyLoop = game:GetService("RunService").RenderStepped:Connect(function()
+        if flying then
+            local camera = workspace.CurrentCamera
+            local moveDirection = Vector3.zero
+            
+            if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.W) then
+                moveDirection = moveDirection + camera.CFrame.LookVector
+            end
+            if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.S) then
+                moveDirection = moveDirection - camera.CFrame.LookVector
+            end
+            if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.A) then
+                moveDirection = moveDirection - camera.CFrame.RightVector
+            end
+            if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.D) then
+                moveDirection = moveDirection + camera.CFrame.RightVector
+            end
+            if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.Space) then
+                moveDirection = moveDirection + Vector3.new(0, 1, 0)
+            end
+            if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.LeftShift) then
+                moveDirection = moveDirection - Vector3.new(0, 1, 0)
+            end
+
+            humanoidRootPart.Velocity = moveDirection.Unit * flySpeed
+        else
+            flyLoop:Disconnect()
+        end
+    end)
+end
+
+-- Toggle for flying
+local Toggle = MainTab:CreateToggle({
+    Name = "Fly Toggle",
+    CurrentValue = false,
+    Flag = "FlyToggle1",
+    Callback = function(Value)
+        flying = Value
+        if flying then
+            FlyLogic()
+        else
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+            humanoidRootPart.Velocity = Vector3.zero -- Stop movement
+        end
+    end,
+})
+
+------------------------------------------------------------
 
 -- Event, um den WalkSpeed nach Respawn zu setzen
 player.CharacterAdded:Connect(function(character)
@@ -55,27 +122,34 @@ end)
 -- Funktion zum Erstellen eines ESP für einen Spieler
 
 
+local players = game:GetService("Players")
+local localPlayer = players.LocalPlayer
+local espEnabled = false
+local espConnections = {}
+
+-- Funktion: Erstelle ESP für Spieler
 local function createESP(player)
     if player == localPlayer then return end -- Ignoriere den lokalen Spieler
 
+    -- Charakter prüfen und auf Hinzufügen warten
     local function addESP(character)
         if not character:FindFirstChild("HumanoidRootPart") then
             character:WaitForChild("HumanoidRootPart")
         end
 
-        -- Erstelle BillboardGui (Text-Anzeige)
+        -- Erstelle BillboardGui
         local billboardGui = Instance.new("BillboardGui")
         billboardGui.Name = "ESP"
         billboardGui.Adornee = character.HumanoidRootPart
-        billboardGui.Size = UDim2.new(6, 0, 1.5, 0) -- Größere Anzeige
+        billboardGui.Size = UDim2.new(4, 0, 4, 0)
         billboardGui.AlwaysOnTop = true
 
-        -- TextLabel für Namen und HP
+        -- TextLabel für den Namen und HP
         local textLabel = Instance.new("TextLabel")
         textLabel.Parent = billboardGui
-        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.Size = UDim2.new(5, 0, 3)
         textLabel.BackgroundTransparency = 1
-        textLabel.TextColor3 = Color3.new(1, 0, 0) -- Roter Text
+        textLabel.TextColor3 = Color3.new(1, 1, 1) -- Weißer Text
         textLabel.TextStrokeTransparency = 0.5 -- Kontur
         textLabel.Font = Enum.Font.SourceSansBold
         textLabel.TextScaled = true
@@ -83,10 +157,7 @@ local function createESP(player)
 
         billboardGui.Parent = character.HumanoidRootPart
 
-        -- Erstelle SelectionBox (Markierung um den Charakter)
-        
-
-        -- Verbindung zur Aktualisierung der Lebenspunkte
+        -- Verbindung zur Lebenspunktaktualisierung
         local connection
         connection = game:GetService("RunService").RenderStepped:Connect(function()
             if not espEnabled or not character:FindFirstChild("Humanoid") then
@@ -117,9 +188,8 @@ local function removeAllESP()
     espConnections = {}
 
     for _, player in ipairs(players:GetPlayers()) do
-        if player.Character then
-            -- Entferne BillboardGui und SelectionBox
-            local espGui = player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart:FindFirstChild("ESP")
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local espGui = player.Character.HumanoidRootPart:FindFirstChild("ESP")
             if espGui then
                 espGui:Destroy()
             end
@@ -151,7 +221,7 @@ end
 local Window = Rayfield:CreateWindow({
    Name = "Universal ✔",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "TEst",
+   LoadingTitle = "Universal Script V.1.0 Alpha",
    LoadingSubtitle = "By Speedking",
    Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -261,4 +331,32 @@ local Toggle = VisualTab:CreateToggle({
     end
 })
 
+local Toggle = MainTab:CreateToggle({
+    Name = "Fly Toggle",
+    CurrentValue = false,
+    Flag = "FlyToggle1",
+    Callback = function(Value)
+        flying = Value
+        if flying then
+            FlyLogic()
+        else
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+            humanoidRootPart.Velocity = Vector3.zero -- Stop movement
+        end
+    end,
+})
+
+ local Slider = MainTab:CreateSlider({
+    Name = "Fly Speed",
+    Range = {0, 100},
+    Increment = 10,
+    Suffix = "FlySpeed",
+    CurrentValue = 10,
+    Flag = "FlySpeed1",
+    Callback = function(Value)
+        flySpeed = Value
+    end,
+})
 
